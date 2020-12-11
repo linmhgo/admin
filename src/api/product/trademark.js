@@ -22,5 +22,13 @@ export default {
       url: `${api_name}/remove/${id}`,
       method: "DELETE"
     });
+  },
+  updetaTrademark(data) {
+    console.log(data);
+    return request({
+      url: `${api_name}/update`,
+      method: "PUT",
+      data
+    });
   }
 };

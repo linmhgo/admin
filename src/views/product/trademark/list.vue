@@ -11,12 +11,17 @@
       <el-table-column label="品牌LOGO">
         <!-- scope代表代表当前行数据 primary -->
         <template slot-scope="scope">
-          <img :src="scope.row.logoUrl" />
+          <img :src="scope.row.logoUrl" :class="['imgwh']" />
         </template>
       </el-table-column>
       <el-table-column label="操作">
-        <el-button type="warning" icon="el-icon-edit">修改</el-button>
         <template slot-scope="scope">
+          <el-button
+            type="warning"
+            icon="el-icon-edit"
+            @click="updateTrademark(scope.row.tmName, scope.row.logoUrl)"
+            >修改</el-button
+          >
           <el-button
             type="danger"
             icon="el-icon-delete"
@@ -79,7 +84,13 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="visible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm('trademarkFrom')"
+        <el-button
+          type="primary"
+          @click="
+            addAllUpdate
+              ? updateTrademark(trademarkFrom.tmName, trademarkFrom.logoUrl, 1)
+              : submitForm('trademarkFrom')
+          "
           >确 定</el-button
         >
       </span>
@@ -102,6 +113,7 @@ export default {
         logoUrl: "",
         tmName: "",
       },
+      addAllUpdate: false,
       rules: {
         tmName: [
           { required: true, message: "请输入品牌名称", trigger: "blur" },
@@ -181,7 +193,6 @@ export default {
     },
     // 提交表单，表当验证通过执行的回调
     submitForm(formName) {
-      console.log(formName);
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           this.$message.success("请求成功");
@@ -212,10 +223,35 @@ export default {
         }
       }
     },
+    //修改品牌数据
+    async updateTrademark(tmName, logoUrl, num) {
+      console.log(this.Add);
+      this.trademarkFrom.logoUrl = logoUrl;
+      this.trademarkFrom.tmName = tmName;
+      this.visible = true;
+      this.addAllUpdate = true;
+
+      if (num) {
+        console.log(this.trademarkFrom.logoUrl, this.trademarkFrom.tmName, num);
+        const { logoUrl, tmName } = this.trademarkFrom;
+        const nums = 4580;
+        const update = await this.$API.product.updetaTrademark({
+          logoUrl,
+          tmName,
+          nums,
+        });
+        if (update.code === 200) {
+          this.$message.success("更改数据成功");
+          this.visible = false;
+          this.addAllUpdate = false;
+          // this.getTrademarkList(this.current, this.limit);
+        }
+      }
+    },
   },
 };
 </script>
-<style lang="sass">
+<style lang="sass" scoped>
 .imgwh
   width: 150px
 .el-select
