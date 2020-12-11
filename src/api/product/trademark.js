@@ -8,5 +8,13 @@ export default {
       url: `${api_name}/${page}/${limit}`,
       method: "GET"
     });
+  },
+  addTrademark(data) {
+    console.log(data);
+    return request({
+      url: `${api_name}/save`,
+      method: "POST",
+      data
+    });
   }
 };
