@@ -16,5 +16,11 @@ export default {
       method: "POST",
       data
     });
+  },
+  delTrademark(id) {
+    return request({
+      url: `${api_name}/remove/${id}`,
+      method: "DELETE"
+    });
   }
 };

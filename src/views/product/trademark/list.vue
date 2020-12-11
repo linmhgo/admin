@@ -16,7 +16,14 @@
       </el-table-column>
       <el-table-column label="操作">
         <el-button type="warning" icon="el-icon-edit">修改</el-button>
-        <el-button type="danger" icon="el-icon-delete">删除</el-button>
+        <template slot-scope="scope">
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            @click="delTrademark(scope.row.id)"
+            >删除</el-button
+          >
+        </template>
       </el-table-column>
     </el-table>
     <!-- @size-change="getTrademarkList(current, $event)"
@@ -183,6 +190,7 @@ export default {
           );
           if (result.code === 200) {
             this.visible = false;
+            this.getTrademarkList(this.current, this.limit);
           } else {
             this.$message.error(result.message);
           }
@@ -191,6 +199,18 @@ export default {
           return false;
         }
       });
+    },
+    //删除表单
+    async delTrademark(id) {
+      if (confirm("确定要删除品牌？？？")) {
+        const del = await this.$API.product.delTrademark(id);
+        if (del.code === 200) {
+          this.$message.success("删除数据成功");
+          this.getTrademarkList(this.current, this.limit);
+        } else {
+          this.$message.success("删除数据失败");
+        }
+      }
     },
   },
 };
