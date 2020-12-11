@@ -43,28 +43,33 @@
         label-width="100px"
         class="demo-trademarkFrom"
       >
-        <el-form-item label="活动名称" prop="name">
+        <el-form-item label="品牌名称" prop="tmName">
           <el-input v-model="trademarkFrom.tmName"></el-input>
+        </el-form-item>
+        <el-form-item label="品牌LOGO" prop="logoUrl">
+          <el-upload
+            prop="tmName"
+            class="avatar-uploader"
+            action="http://182.92.128.115/admin/product/fileUpload"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img
+              v-if="trademarkFrom.logoUrl"
+              :src="trademarkFrom.logoUrl"
+              class="avatar"
+            />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+          <span>输入的图片格式为JPG PNG 且不能大于50kb</span>
         </el-form-item>
       </el-form>
       <!-- upload上传组件 -->
       <!-- 后台处理了跨域的话可action="http://182.92.128.115/admin/product/fileUpload"
           后台没有处理夸域问题的话
       -->
-      <el-upload
-        class="avatar-uploader"
-        action="http://182.92.128.115/admin/product/fileUpload"
-        :show-file-list="false"
-        :on-success="handleAvatarSuccess"
-        :before-upload="beforeAvatarUpload"
-      >
-        <img
-          v-if="trademarkFrom.logoUrl"
-          :src="trademarkFrom.logoUrl"
-          class="avatar"
-        />
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload>
+
       <span slot="footer" class="dialog-footer">
         <el-button @click="visible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm('trademarkFrom')"
@@ -93,6 +98,9 @@ export default {
       rules: {
         tmName: [
           { required: true, message: "请输入品牌名称", trigger: "blur" },
+        ],
+        logoUrl: [
+          { required: true, message: "请输入品牌LOGO", trigger: "blur" },
         ],
       }, //表单验证
     };
@@ -137,10 +145,9 @@ export default {
         message: "成功"
         ok: true
       }
-
       */
-      // console.log("之后", res, file);
-      this.trademarkFrom.logoUrl = URL.createObjectURL(file.raw);
+      console.log("之后", res, file);
+      this.trademarkFrom.logoUrl = res.data;
     },
     // 上传图片前执行的函数
     beforeAvatarUpload(file) {
@@ -167,6 +174,7 @@ export default {
     },
     // 提交表单，表当验证通过执行的回调
     submitForm(formName) {
+      console.log(formName);
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           this.$message.success("请求成功");
