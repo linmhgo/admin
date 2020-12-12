@@ -101,7 +101,6 @@ export default {
       const result = await this.$API.attr.getAttrList(this.category);
       if (result.code === 200) {
         this.$message.success("数据请求成功");
-        console.log(result);
         this.$emit("change", result.data);
       } else {
         this.$message.error("数据请求失败");
