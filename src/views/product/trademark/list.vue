@@ -2,7 +2,15 @@
   <div>
     <!-- 数据渲染 table-->
     <el-button type="primary" icon="el-icon-plus" @click="add">添加</el-button>
-    <el-table :data="trademarkList" border style="width: 100%; margin: 20px 0">
+    <el-table
+      v-loading="loading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
+      :data="trademarkList"
+      border
+      style="width: 100%; margin: 20px 0"
+    >
       <el-table-column type="index" label="序号" width="80" align="center">
       </el-table-column>
       <el-table-column prop="tmName" label="品牌名称"> </el-table-column>
@@ -119,7 +127,8 @@ export default {
         logoUrl: [
           { required: true, message: "请输入品牌LOGO", trigger: "blur" },
         ],
-      }, //表单验证
+      },
+      loading: false,
     };
   },
   mounted() {
@@ -132,16 +141,19 @@ export default {
     // 确不是6条而是之前的三条，这里就要使用到.sync使得数据同步即可,page-size.sync
 
     async getTrademarkList(current, size) {
+      this.loading = true;
       const trademarkList = await this.$API.product.getTrademark(current, size);
       // console.log(trademarkList);
       //判断请求的数据是否成功，判断功能是否成功在拦截器中已经判断
       if (trademarkList.code === 200) {
+        this.loading = false;
         this.$message.success("请求数据成功");
         this.trademarkList = trademarkList.data.records;
         this.limit = trademarkList.data.size;
         this.current = trademarkList.data.current;
         this.total = trademarkList.data.total;
       } else {
+        this.loading = false;
         this.$message.error("请求数据失败");
       }
     },
@@ -193,12 +205,17 @@ export default {
     // 提交表单，表当验证通过执行的回调
     add() {
       this.visible = true;
-      this.trademarkFrom = {};
+      this.trademarkFrom = {
+        logoUrl: "",
+        tmName: "",
+      };
+      this.$refs.trademarkFrom && this.$refs.trademarkFrom.clearValidate();
     },
     update(row) {
       console.log(row);
       this.visible = true;
       this.trademarkFrom = { ...row };
+      this.$refs.trademarkFrom && this.$refs.trademarkFrom.clearValidate();
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
@@ -259,26 +276,26 @@ export default {
 .el-select
   margin-left: 250px
 
-.avatar-uploader .el-upload
+>>>.avatar-uploader .el-upload
   border: 1px dashed #d9d9d9
   border-radius: 6px
   cursor: pointer
   position: relative
   overflow: hidden
 
-  .avatar-uploader .el-upload:hover
-    border-color: #409EFF
+>>>.avatar-uploader .el-upload:hover
+  border-color: #409EFF
 
-  .avatar-uploader-icon
-    font-size: 28px
-    color: #8c939d
-    width: 178px
-    height: 178px
-    line-height: 178px
-    text-align: center
+.avatar-uploader-icon
+  font-size: 28px
+  color: #8c939d
+  width: 178px
+  height: 178px
+  line-height: 178px
+  text-align: center
 
-  .avatar
-    width: 178px
-    height: 178px
-    display: block
+.avatar
+  width: 178px
+  height: 178px
+  display: block
 </style>
