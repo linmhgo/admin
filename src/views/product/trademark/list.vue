@@ -1,9 +1,7 @@
 <template>
   <div>
     <!-- 数据渲染 table-->
-    <el-button type="primary" icon="el-icon-plus" @click="visible = true"
-      >添加</el-button
-    >
+    <el-button type="primary" icon="el-icon-plus" @click="add">添加</el-button>
     <el-table :data="trademarkList" border style="width: 100%; margin: 20px 0">
       <el-table-column type="index" label="序号" width="80" align="center">
       </el-table-column>
@@ -19,7 +17,7 @@
           <el-button
             type="warning"
             icon="el-icon-edit"
-            @click="updateTrademark(scope.row.tmName, scope.row.logoUrl)"
+            @click="update(scope.row)"
             >修改</el-button
           >
           <el-button
@@ -128,6 +126,7 @@ export default {
     this.getTrademarkList(this.current, this.limit);
   },
   methods: {
+    // 点击修改时，将数据更改
     // 当从当前第八页每页显示三条跳转到每页6条时，因为更改每页显示的数据且当前页数也 进行了更改
     //所有发送了两次请求，handleCurrentChange是第二个触发的当时他所携带的当前页像素数据的数量
     // 确不是6条而是之前的三条，这里就要使用到.sync使得数据同步即可,page-size.sync
@@ -192,15 +191,43 @@ export default {
       return isJPG && isLt2M;
     },
     // 提交表单，表当验证通过执行的回调
+    add() {
+      this.visible = true;
+      this.trademarkFrom = {};
+    },
+    update(row) {
+      console.log(row);
+      this.visible = true;
+      this.trademarkFrom = { ...row };
+    },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this.$message.success("请求成功");
-          const result = await this.$API.product.addTrademark(
-            this.trademarkFrom
-          );
+          const { trademarkFrom } = this;
+          const isUpdate = !!trademarkFrom.id;
+          let result;
+          //以前的数据在trademarkList中，判断之前的数据和现在的数据相同不，相同就不更新
+          if (isUpdate) {
+            const tm = this.trademarkList.find(
+              (item) => item.id === trademarkFrom.id
+            );
+            if (
+              tm.logoUrl === trademarkFrom.logoUrl &&
+              tm.tmName === trademarkFrom.tmName
+            ) {
+              this.$message.warning("数据一样");
+              return;
+            }
+          }
+
+          if (isUpdate) {
+            result = await this.$API.product.updetaTrademark(trademarkFrom);
+          } else {
+            result = await this.$API.product.addTrademark(trademarkFrom);
+          }
           if (result.code === 200) {
             this.visible = false;
+            this.$message.warning(`数据${isUpdate ? "修改" : "增加"}成功`);
             this.getTrademarkList(this.current, this.limit);
           } else {
             this.$message.error(result.message);
@@ -220,31 +247,6 @@ export default {
           this.getTrademarkList(this.current, this.limit);
         } else {
           this.$message.success("删除数据失败");
-        }
-      }
-    },
-    //修改品牌数据
-    async updateTrademark(tmName, logoUrl, num) {
-      console.log(this.Add);
-      this.trademarkFrom.logoUrl = logoUrl;
-      this.trademarkFrom.tmName = tmName;
-      this.visible = true;
-      this.addAllUpdate = true;
-
-      if (num) {
-        console.log(this.trademarkFrom.logoUrl, this.trademarkFrom.tmName, num);
-        const { logoUrl, tmName } = this.trademarkFrom;
-        const nums = 4580;
-        const update = await this.$API.product.updetaTrademark({
-          logoUrl,
-          tmName,
-          nums,
-        });
-        if (update.code === 200) {
-          this.$message.success("更改数据成功");
-          this.visible = false;
-          this.addAllUpdate = false;
-          // this.getTrademarkList(this.current, this.limit);
         }
       }
     },
