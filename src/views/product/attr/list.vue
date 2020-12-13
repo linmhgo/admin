@@ -73,9 +73,10 @@
           </template>
         </el-table-column>
         <el-table-column label="操作">
-          <template v-slot="{ row }">
+          <template v-slot="{ row, $index }">
             <el-button
-              @click="del(row.$index)"
+              @click="del($index)"
+              :title="`确定删除 ${row.valueName} 吗？`"
               type="danger"
               icon="el-icon-delete"
               size="mini"
@@ -117,8 +118,18 @@ export default {
     Category,
   },
   methods: {
-    attrList(data) {
-      this.attrLists = data;
+    async attrList(data) {
+      this.category = data;
+      console.log(data);
+      const result = await this.$API.attr.getAttrList(data);
+      console.log(result);
+      if (result.code === 200) {
+        this.$message.success("数据请求成功");
+        this.attrLists = result.data;
+        this.$emit("change", result.data);
+      } else {
+        this.$message.error("数据请求失败");
+      }
     },
     handleShowList() {
       this.isShowList = !this.isShowList;
@@ -160,9 +171,9 @@ export default {
     },
     //删除当行数据
     del(index) {
+      console.log(index);
       this.attr.attrValueList.splice(index, 1);
     },
-
     //确定更新属性
     async updateAttrList() {
       const result = await this.$API.attr.getUpdateAttrlist(this.attr);
@@ -170,16 +181,7 @@ export default {
       if (result.code === 200) {
         this.$message.success("属性更爱成功");
         this.isShowList = true;
-      } else {
-        this.$message.error("数据请求失败");
-      }
-    },
-    //点击第三级列表时请求到属性列表数据
-    async handleChange3() {
-      const result = await this.$API.attr.getAttrList(this.category);
-      if (result.code === 200) {
-        this.$message.success("数据请求成功");
-        this.$emit("change", result.data);
+        this.attrList(this.category);
       } else {
         this.$message.error("数据请求失败");
       }
@@ -187,7 +189,6 @@ export default {
   },
 };
 </script>
-
 <style lang="sass">
 .text
   font-size: 14px

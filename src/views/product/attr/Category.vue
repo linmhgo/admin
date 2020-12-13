@@ -97,14 +97,19 @@ export default {
         this.$message.error("数据请求失败");
       }
     },
-    async handleChange3() {
-      const result = await this.$API.attr.getAttrList(this.category);
-      if (result.code === 200) {
-        this.$message.success("数据请求成功");
-        this.$emit("change", result.data);
-      } else {
-        this.$message.error("数据请求失败");
-      }
+    async handleChange3(category3Id) {
+      // const result = await this.$API.attr.getAttrList(this.category);
+      const category = {
+        ...this.category,
+        category3Id,
+      };
+      this.$emit("change", category);
+      // if (result.code === 200) {
+      //   this.$message.success("数据请求成功");
+      //   this.$emit("change", result.data);
+      // } else {
+      //   this.$message.error("数据请求失败");
+      // }
     },
   },
 };
