@@ -45,7 +45,9 @@
           <el-input v-model="attr.attrName"></el-input>
         </el-form-item>
       </el-form>
-      <el-button type="primary" icon="el-icon-plus">添加属性</el-button>
+      <el-button type="primary" icon="el-icon-plus" @click="add"
+        >添加属性</el-button
+      >
       <el-table
         :data="attr.attrValueList"
         border
@@ -71,8 +73,9 @@
           </template>
         </el-table-column>
         <el-table-column label="操作">
-          <template>
+          <template v-slot="{ row }">
             <el-button
+              @click="del(row.$index)"
               type="danger"
               icon="el-icon-delete"
               size="mini"
@@ -80,7 +83,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-button type="primary">确认修改</el-button>
+      <el-button type="primary" @click="updateAttrList">确认修改</el-button>
       <el-button @click="isShowList = true">取消</el-button>
     </el-card>
   </div>
@@ -120,11 +123,14 @@ export default {
     handleShowList() {
       this.isShowList = !this.isShowList;
     },
-    //修改属性页面
+    //修改属性，显示修改属性页面，并且把当行数据赋值给attr展示到修改属性页面
     update(row) {
-      this.attr.attrValueList = row.attrValueList;
-      this.attr.attrName = row.attrName;
+      // this.attr.attrValueList = row.attrValueList;
+      // this.attr.attrName = row.attrName;
       this.isShowList = false;
+      //深度克隆防止对象中的对象还存在引用关系
+      this.attr = JSON.parse(JSON.stringify(row));
+      // console.log(a);
     },
     //添加edit标识
     edit(row) {
@@ -138,11 +144,45 @@ export default {
     // scope上的￥index表示的是第几条数据
     // row就表示当行数据了直接更改想要更改的数据就行
     lsoeFocus(row, index) {
+      //input失去焦点时如果没有填写数据在input中的话那么就把这个对象从attrValueList中删除
       if (!row.valueName) {
         this.attr.attrValueList.splice(index, 1);
         return;
       }
       row.edit = false;
+    },
+    //添加属性,并使的input获取焦点
+    add() {
+      this.attr.attrValueList.push({ edit: true });
+      this.$nextTick(() => {
+        this.$refs.input.focus();
+      });
+    },
+    //删除当行数据
+    del(index) {
+      this.attr.attrValueList.splice(index, 1);
+    },
+
+    //确定更新属性
+    async updateAttrList() {
+      const result = await this.$API.attr.getUpdateAttrlist(this.attr);
+      console.log(result);
+      if (result.code === 200) {
+        this.$message.success("属性更爱成功");
+        this.isShowList = true;
+      } else {
+        this.$message.error("数据请求失败");
+      }
+    },
+    //点击第三级列表时请求到属性列表数据
+    async handleChange3() {
+      const result = await this.$API.attr.getAttrList(this.category);
+      if (result.code === 200) {
+        this.$message.success("数据请求成功");
+        this.$emit("change", result.data);
+      } else {
+        this.$message.error("数据请求失败");
+      }
     },
   },
 };
