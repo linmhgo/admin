@@ -1,8 +1,18 @@
 <template>
   <div>
-    <Category @change="attrList" />
+    <Category
+      @change="attrList"
+      :disabled="isShowList"
+      @clearCatetroy="clearCatetroy"
+    />
     <el-card class="box-card" style="margin-top: 20px" v-show="isShowList">
-      <el-button type="primary" icon="el-icon-plus">添加属性</el-button>
+      <el-button
+        type="primary"
+        icon="el-icon-plus"
+        @click="addattrList"
+        :disabled="!category.category3Id"
+        >添加属性</el-button
+      >
       <el-table :data="attrLists" border style="width: 100%; margin: 20px 0">
         <el-table-column type="index" label="序号" align="center" width="80">
         </el-table-column>
@@ -45,7 +55,11 @@
           <el-input v-model="attr.attrName"></el-input>
         </el-form-item>
       </el-form>
-      <el-button type="primary" icon="el-icon-plus" @click="add"
+      <el-button
+        type="primary"
+        icon="el-icon-plus"
+        @click="add"
+        :disabled="!attr.attrName"
         >添加属性</el-button
       >
       <el-table
@@ -74,13 +88,17 @@
         </el-table-column>
         <el-table-column label="操作">
           <template v-slot="{ row, $index }">
-            <el-button
-              @click="del($index)"
+            <el-popconfirm
+              @onConfirm="del($index)"
               :title="`确定删除 ${row.valueName} 吗？`"
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
-            ></el-button>
+            >
+              <el-button
+                slot="reference"
+                type="danger"
+                icon="el-icon-delete"
+                size="mini"
+              ></el-button>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -112,6 +130,11 @@ export default {
         attrValueList: [],
       },
       isShowList: true,
+      category: {
+        category1Id: "",
+        category2Id: "",
+        category3Id: "",
+      },
     };
   },
   components: {
@@ -120,9 +143,7 @@ export default {
   methods: {
     async attrList(data) {
       this.category = data;
-      console.log(data);
       const result = await this.$API.attr.getAttrList(data);
-      console.log(result);
       if (result.code === 200) {
         this.$message.success("数据请求成功");
         this.attrLists = result.data;
@@ -136,12 +157,12 @@ export default {
     },
     //修改属性，显示修改属性页面，并且把当行数据赋值给attr展示到修改属性页面
     update(row) {
+      console.log(row);
       // this.attr.attrValueList = row.attrValueList;
       // this.attr.attrName = row.attrName;
       this.isShowList = false;
       //深度克隆防止对象中的对象还存在引用关系
       this.attr = JSON.parse(JSON.stringify(row));
-      // console.log(a);
     },
     //添加edit标识
     edit(row) {
@@ -171,13 +192,20 @@ export default {
     },
     //删除当行数据
     del(index) {
-      console.log(index);
       this.attr.attrValueList.splice(index, 1);
     },
     //确定更新属性
     async updateAttrList() {
-      const result = await this.$API.attr.getUpdateAttrlist(this.attr);
-      console.log(result);
+      let result;
+      if (this.attr.id) {
+        result = await this.$API.attr.getUpdateAttrlist(this.attr);
+      } else {
+        this.attr.categoryLevel = 3;
+        this.attr.categoryId = this.category.category3Id;
+        console.log(this.attr);
+        result = await this.$API.attr.getUpdateAttrlist(this.attr);
+      }
+
       if (result.code === 200) {
         this.$message.success("属性更爱成功");
         this.isShowList = true;
@@ -185,6 +213,15 @@ export default {
       } else {
         this.$message.error("数据请求失败");
       }
+    },
+    addattrList() {
+      this.attr.attrName = "";
+      this.attr.attrValueList = [];
+      this.isShowList = false;
+    },
+    clearCatetroy() {
+      this.attrLists = [];
+      this.category.category3Id = "";
     },
   },
 };
