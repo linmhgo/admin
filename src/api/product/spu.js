@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import { data } from "autoprefixer";
 
 const api_name = "/admin/product";
 
@@ -45,6 +46,15 @@ export default {
     return request({
       method: "DELETE",
       url: `${api_name}/deleteSpu/${spuId}`
+    });
+  },
+  //更新更改的数据
+  updateSaleList(spu) {
+    console.log(spu);
+    return request({
+      method: "POST",
+      url: `${api_name}/updateSpuInfo`,
+      data: spu
     });
   }
 };

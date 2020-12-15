@@ -26,6 +26,7 @@ export default {
   },
   mounted() {
     this.$bus.$on("switchShow", this.getPageList);
+    this.$bus.$on("shiftShowList", this.shiftShowList);
   },
   methods: {
     switchShow() {
@@ -34,6 +35,12 @@ export default {
     getPageList(row) {
       this.isShow = false;
       this.pageList = row;
+    },
+    shiftShowList(category3Id) {
+      this.isShow = true;
+      this.$nextTick(() => {
+        this.$bus.$emit("change", { category3Id });
+      });
     },
   },
   beforeDestroy() {
