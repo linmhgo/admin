@@ -1,10 +1,8 @@
 <template>
   <div>
-    <Category
-      @change="attrList"
-      :disabled="isShowList"
-      @clearCatetroy="clearCatetroy"
-    />
+    <!-- @clearCatetroy="clearCatetroy"
+                @change="attrList" -->
+    <Category :disabled="!isShowList" />
     <el-card class="box-card" style="margin-top: 20px" v-show="isShowList">
       <el-button
         type="primary"
@@ -109,7 +107,7 @@
 </template>
 
 <script>
-import Category from "./Category";
+import Category from "@/components/Category/index";
 
 /*
 attrLists:Array[5]
@@ -140,6 +138,7 @@ export default {
   components: {
     Category,
   },
+
   methods: {
     async attrList(data) {
       this.category = data;
@@ -223,6 +222,14 @@ export default {
       this.attrLists = [];
       this.category.category3Id = "";
     },
+  },
+  mounted() {
+    this.$bus.$on("change", this.attrList);
+    this.$bus.$on("clearCatetroy", this.clearCatetroy);
+  },
+  beforeDestroy() {
+    this.$bus.$off("change", this.attrList);
+    this.$bus.$off("clearCatetroy", this.clearCatetroy);
   },
 };
 </script>

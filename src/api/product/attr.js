@@ -1,5 +1,4 @@
 import request from "@/utils/request";
-import { data } from "autoprefixer";
 
 const api_name = "/admin/product";
 

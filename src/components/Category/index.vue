@@ -6,7 +6,7 @@
           v-model="category.category1Id"
           placeholder="请选择"
           @change="handleChange1"
-          :disabled="!disabled"
+          :disabled="disabled"
         >
           <el-option
             v-for="Category1 in getCategory1List"
@@ -21,7 +21,7 @@
           v-model="category.category2Id"
           placeholder="请选择"
           @change="handleChange2"
-          :disabled="!disabled"
+          :disabled="disabled"
         >
           <el-option
             v-for="Category2 in getCategory2List"
@@ -36,7 +36,7 @@
           v-model="category.category3Id"
           placeholder="请选择"
           @change="handleChange3"
-          :disabled="!disabled"
+          :disabled="disabled"
         >
           <el-option
             v-for="Category3 in getCategory3List"
@@ -79,8 +79,9 @@ export default {
   methods: {
     //当选中一级是会发送请求二级的数据
     async handleChange1(value) {
+      this.$bus.$emit("clearList");
       //选中一级分类时清空二级三级分类
-      this.$emit("clearCatetroy");
+      this.$bus.$emit("clearCatetroy");
       this.category.category2Id = "";
       this.category.category3Id = "";
       const result = await this.$API.attr.getCategory2Id(value);
@@ -92,7 +93,8 @@ export default {
       }
     },
     async handleChange2(value) {
-      this.$emit("clearCatetroy");
+      this.$bus.$emit("clearCatetroy");
+      this.$bus.$emit("clearList");
       //更改二级分类的时候清空三级分类
       this.category.category3Id = "";
       const result = await this.$API.attr.getCategory3Id(value);
@@ -111,7 +113,7 @@ export default {
         ...this.category,
         category3Id,
       };
-      this.$emit("change", category);
+      this.$bus.$emit("change", category);
       // if (result.code === 200) {
       //   this.$message.success("数据请求成功");
       //   this.$emit("change", result.data);
