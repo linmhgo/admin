@@ -25,7 +25,10 @@
         <el-form-item label="SPU图片">
           <el-upload
             :on-preview="handlePictureCardPreview"
-            :file-list="imageList"
+            :file-list="formatImageList"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            :on-remove="handleRemove"
             class="avatar-uploader"
             list-type="picture-card"
             :action="`${$BASE_API}/admin/product/fileUpload`"
@@ -40,17 +43,23 @@
         </el-form-item>
         <el-form-item label="销售属性" :model="filterSale">
           <el-select
-            v-model="filterSale.name"
+            v-model="spu.text"
             :placeholder="`可选项剩余${filterSale.length}`"
           >
             <el-option
               v-for="sale in filterSale"
               :key="sale.id"
               :label="sale.name"
-              :value="sale.id"
+              :value="`${sale.name}-${sale.id}`"
             ></el-option>
           </el-select>
-          <el-button type="primary" icon="el-icon-plus">添加销售属性</el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            :disabled="!filterSale.length"
+            @click="addSaleList"
+            >添加销售属性</el-button
+          >
         </el-form-item>
         <!-- table表单 -->
         <el-table
@@ -71,28 +80,37 @@
                 v-for="spuSale in scope.row.spuSaleAttrValueList"
                 closable
                 :disable-transitions="false"
-                @close="handleClose(spuSale.baseSaleAttrId, scope.row)"
               >
                 {{ spuSale.saleAttrValueName }}
               </el-tag>
+              <el-input
+                ref="input"
+                v-model="spuSaleValue"
+                placeholder="请输入"
+                size="small"
+                style="width: 80px"
+                v-if="scope.row.edit"
+                @blur="lsoeFocus(scope.row, scope.$index)"
+                @keyup.enter.native="lsoeFocus(scope.row, scope.$index)"
+              ></el-input>
+              <el-button
+                v-else
+                class="button-new-tag"
+                size="small"
+                @click="addSpuSale(scope.row)"
+                >添加</el-button
+              >
+              <!-- <el-input type="text" />
+                            @keyup.enter.native=""
+              @blur="handleInputConfirm" -->
             </template>
-            <el-input
+            <!-- <el-input
               class="input-new-tag"
-              v-if="inputVisible"
               v-model="inputValue"
               ref="saveTagInput"
               size="small"
-              @keyup.enter.native="handleInputConfirm"
-              @blur="handleInputConfirm"
             >
-            </el-input>
-            <el-button
-              v-else
-              class="button-new-tag"
-              size="small"
-              @click="showInput"
-              >+ New Tag</el-button
-            >
+            </el-input> -->
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
@@ -127,10 +145,6 @@ export default {
   },
   data() {
     return {
-      form: {
-        name: "",
-        region: "",
-      },
       pageList: this.spu,
       imageList: [], //图片列表
       dialogImageUrl: "",
@@ -138,8 +152,10 @@ export default {
       trademarkList: [], //品牌
       saleList: [], //全部销售
       spusaleList: [], //部分銷售
-      inputVisible: false, //spu属性
+      inputVisible: true, //spu属性
       inputValue: "", //spu属性
+      isSaleShow: false,
+      spuSaleValue: "", //新添加的属性值
     };
   },
   async mounted() {
@@ -169,12 +185,51 @@ export default {
     formatImageList() {
       return this.imageList.map((item) => {
         return {
-          name:
+          uid: item.uid || item.id,
+          name: item.imgName,
+          url: item.imgUrl,
         };
       });
     },
   },
   methods: {
+    //失去焦点和回车执行的函数
+    lsoeFocus(row, index) {
+      //input失去焦点时如果没有填写数据在input中的话那么就把这个对象从attrValueList中删除
+      console.log(row, index);
+      const { saleAttrName, spuId, isChecked, baseSaleAttrId } = row;
+      if (this.spuSaleValue) {
+        row.spuSaleAttrValueList.push({
+          baseSaleAttrId,
+          isChecked,
+          saleAttrName,
+          saleAttrValueName: this.spuSaleValue,
+          spuId,
+        });
+        this.spuSaleValue = "";
+      }
+      row.edit = false;
+    },
+    //点击添加属性
+    addSpuSale(row) {
+      this.$set(row, "edit", true);
+      // this.isSaleShow = true;
+      this.$nextTick(() => {
+        this.$refs.input.focus();
+      });
+    },
+    // 添加当条属性列表
+    addSaleList() {
+      const { id, text } = this.spu;
+      const [saleAttrName, baseSaleAttrId] = text.split("-");
+      this.spusaleList.push({
+        baseSaleAttrId: baseSaleAttrId,
+        saleAttrName: saleAttrName,
+        spuId: id,
+        spuSaleAttrValueList: [],
+      });
+      this.spu.text = "";
+    },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
@@ -189,9 +244,10 @@ export default {
         // this.imageList = result.data;
         //改成elementui 渲染数据想要的格式
         console.log(result);
-        result.data.map((item) => {
-          this.imageList.push({ name: item.imgName, url: item.imgUrl });
-        });
+        // result.data.map((item) => {
+        //   this.imageList.push({ name: item.imgName, url: item.imgUrl });
+        // });
+        this.imageList = result.data;
       } else {
         this.$message.error("请求数据失败");
       }
@@ -225,26 +281,26 @@ export default {
       }
     },
     //属性spu描述
-    handleClose(tag, index) {
-      console.log(tag, index);
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
-    },
-    //属性spu描述
-    showInput() {
-      this.inputVisible = true;
-      this.$nextTick((_) => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-    //属性spu描述
-    handleInputConfirm() {
-      let inputValue = this.inputValue;
-      if (inputValue) {
-        this.dynamicTags.push(inputValue);
-      }
-      this.inputVisible = false;
-      this.inputValue = "";
-    },
+    // filterSale(tag, index) {
+    //   console.log(tag, index);
+    //   this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+    // },
+    // //属性spu描述
+    // showInput() {
+    //   this.inputVisible = true;
+    //   this.$nextTick((_) => {
+    //     this.$refs.saveTagInput.$refs.input.focus();
+    //   });
+    // },
+    // //属性spu描述
+    // handleInputConfirm() {
+    //   let inputValue = this.inputValue;
+    //   if (inputValue) {
+    //     this.dynamicTags.push(inputValue);
+    //   }
+    //   this.inputVisible = false;
+    //   this.inputValue = "";
+    // },
     async delSupSale(row) {
       console.log(row.id);
       const result = await this.$API.spu.delSpuSaleList(row.spuId);
@@ -253,6 +309,55 @@ export default {
       } else {
         this.$message.error("删除属性数据失败");
       }
+    },
+    // 上传图片前执行的函数
+    beforeAvatarUpload(file) {
+      /* {lastModified: 1607686046372
+          lastModifiedDate: Fri Dec 11 2020 19:27:26 GMT+0800 (中国标准时间) {}
+          name: "8848.jpg"
+          size: 2529
+          type: "image/jpeg"
+          uid: 1607690192315
+          webkitRelativePath: ""}
+          */
+      // console.log("之前", file);
+      const imgTyeps = ["image/jpeg", "image/pmg"];
+      const isJPG = imgTyeps.indexOf(file.type) > -1;
+      const isLt2M = file.size / 1024 < 50;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG PNG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 50kb!");
+      }
+      return isJPG && isLt2M;
+    },
+    // 上传图片成功时的回调函数
+    handleAvatarSuccess(res, file) {
+      /*
+      {
+        code: 200
+        data: "http://182.92.128.115:8080/group1/M00/00/95/rBFUDF_TZ86AAXOwAAAJ4fdYzmQ089.jpg"
+        message: "成功"
+        ok: true
+      }
+      */
+      // console.log("之后", res, file);
+      // this.trademarkFrom.logoUrl = res.data;
+      this.imageList.push({
+        uid: file.uid,
+        imgName: file.name,
+        imgUrl: res.data,
+        spuId: this.spu.id,
+      });
+    },
+    //删除图片执行的函数
+    handleRemove(file, fileList) {
+      console.log(file);
+      this.imageList = this.imageList.filter(
+        (item) => item.imgUrl !== file.url
+      );
     },
   },
 };

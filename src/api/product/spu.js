@@ -42,7 +42,6 @@ export default {
   },
   //删除spu属性
   delSpuSaleList(spuId) {
-    console.log(spuId);
     return request({
       method: "DELETE",
       url: `${api_name}/deleteSpu/${spuId}`
