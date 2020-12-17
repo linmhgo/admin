@@ -104,6 +104,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   props: {
     spuItme: Object,
@@ -122,6 +124,9 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
     isDefault() {
       return this.imageList.map((obj) => {
         return {
@@ -170,11 +175,7 @@ export default {
       }
     },
     async getAttrList() {
-      const result = await this.$API.attr.getAttrList({
-        category1Id: this.spu.category1Id,
-        category2Id: this.spu.category2Id,
-        category3Id: this.spu.category3Id,
-      });
+      const result = await this.$API.attr.getAttrList(this.category);
       if (result.code === 200) {
         this.$message.success("请求图片数据成功");
         this.attrList = result.data;

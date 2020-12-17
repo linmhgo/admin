@@ -70,24 +70,31 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "spuShowList",
   data() {
     return {
-      category: {
-        category1Id: "",
-        category2Id: "",
-        category3Id: "",
-      },
+      // category: {
+      //   category1Id: "",
+      //   category2Id: "",
+      //   category3Id: "",
+      // },
       pageList: [],
       limit: 3,
       page: 1,
       total: 0,
     };
   },
+  computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
+  },
   methods: {
-    handleCategoryChange(category) {
-      this.category = category;
+    handleCategoryChange() {
+      // this.category = category;
       const { page, limit } = this;
       this.getPageList(page, limit);
     },
@@ -110,20 +117,41 @@ export default {
       // console.log(result);
     },
     clearList() {
+      //清除当页属性列表
       this.pageList = [];
     },
     update(row) {
       this.$bus.$emit("switchShow", row);
     },
   },
-  mounted() {
-    this.$bus.$on("change", this.handleCategoryChange);
-    this.$bus.$on("clearList", this.clearList);
+  watch: {
+    //当三级列表发送变化后请求当页数据
+    // "category.category3Id"() {
+    //   this.handleCategoryChange();
+    // },
+    "category.category3Id": {
+      handler(category3Id) {
+        if (!category3Id) return;
+        this.handleCategoryChange();
+      },
+      immediate: true,
+    },
+    //当一级列表被选中的时候
+    "category.category1Id"() {
+      this.clearList();
+    },
+    "category.category2Id"() {
+      this.clearList();
+    },
   },
-  beforeDestroy() {
-    this.$bus.$off("change", this.handleCategoryChange);
-    this.$bus.$off("clearList", this.clearList);
-  },
+  // async mounted() {
+  //   this.$bus.$on("change", this.handleCategoryChange);
+  //   this.$bus.$on("clearList", this.clearList);
+  // },
+  // beforeDestroy() {
+  //   this.$bus.$off("change", this.handleCategoryChange);
+  //   this.$bus.$off("clearList", this.clearList);
+  // },
 };
 </script>
 

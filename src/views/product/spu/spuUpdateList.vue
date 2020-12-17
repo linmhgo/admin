@@ -143,7 +143,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="spuForm('spuForm')">保存</el-button>
-          <el-button @click="$bus.$emit('shiftShowList', spu.category3Id)"
+          <el-button @click="$bus.$emit('shiftShowList', category.category3Id)"
             >取消</el-button
           >
         </el-form-item>
@@ -153,6 +153,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "spuUpdateList",
   props: {
@@ -198,6 +200,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
     filterSale() {
       const result = this.saleList.filter((allSale) => {
         //每一处遍历都会检查全部属性中是否在普通属性中也有
@@ -266,7 +271,7 @@ export default {
           if (result.code === 200) {
             this.$message.success("更新数据成功");
             // 数据更新成功跳转到show页面
-            this.$bus.$emit("shiftShowList", this.spu.category3Id);
+            this.$bus.$emit("shiftShowList", this.category.category3Id);
           } else {
             this.$message.error("请求数据失败");
           }

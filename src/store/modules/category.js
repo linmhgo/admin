@@ -14,42 +14,68 @@ export default {
   },
   gerters: {},
   actions: {
-    async getCategory1List({ commit }, category1Id) {
+    //一上来页面请求的数据
+    async getCategory1List({ commit }) {
       const result = await API.attr.getCategory1Id();
       if (result.code === 200) {
-        commit(GET_CATEGORY1_LIST, { result, category1Id });
+        commit("GET_CATEGORY1_LIST", result.data);
       } else {
         Message.error(result.message);
       }
     },
-    async getCategory2List({ commit }, { value, category2Id }) {
-      const result = await API.attr.getCategory2Id(value);
+    //点击一节列表的事就请求的数据
+    async getCategory2List({ commit }, category1Id) {
+      const result = await API.attr.getCategory2Id(category1Id);
       if (result.code === 200) {
-        commit(GET_CATEGORY2_LIST, { result, category2Id });
+        const { data } = result;
+        commit("GET_CATEGORY2_LIST", { data, category1Id });
       } else {
+        //请求错误的时候清空
         Message.error(result.message);
+        commit("GET_CATEGORY2_LIST_ERROR", category1Id);
       }
     },
-    async getCategory3List({ commit }, { value, category3Id }) {
-      const result = await API.attr.getCategory3Id(value);
+    //请求二级列表发送的请求
+    async getCategory3List({ commit }, category2Id) {
+      const result = await API.attr.getCategory3Id(category2Id);
       if (result.code === 200) {
-        commit(GET_CATEGORY3_LIST, { result, category3Id });
+        const { data } = result;
+        commit("GET_CATEGORY3_LIST", { data, category2Id });
       } else {
         Message.error(result.message);
+        commit("GET_CATEGORY3_LIST_ERROR", category2Id);
       }
     }
   },
   mutations: {
-    GET_CATEGORY1_LIST(state, { result, category1Id }) {
+    GET_CATEGORY1_LIST(state, result) {
       state.category1List = result;
+    },
+    GET_CATEGORY2_LIST(state, { data, category1Id }) {
+      state.category2List = data;
       state.category.category1Id = category1Id;
+      state.category3List = [];
+      state.category.category2Id = "";
+      state.category.category3Id = "";
     },
-    GET_CATEGORY2_LIST(state, { result, category2Id }) {
-      state.category1List = result;
+    GET_CATEGORY3_LIST(state, { data, category2Id }) {
+      state.category3List = data;
       state.category.category2Id = category2Id;
+      state.category.category3Id = "";
     },
-    GET_CATEGORY3_LIST(state, { result, category3Id }) {
-      state.category1List = result;
+    GET_CATEGORY2_LIST_ERROR(state, category1Id) {
+      state.category.category1Id = category1Id;
+      state.category.category2Id = "";
+      state.category.category3Id = "";
+      state.category2List = [];
+      state.category3List = [];
+    },
+    GET_CATEGORY3_LIST_ERROR(state, category2Id) {
+      state.category.category2Id = category2Id;
+      state.category.category3Id = "";
+      state.category3List = [];
+    },
+    GET_CATEGORY3(state, category3Id) {
       state.category.category3Id = category3Id;
     }
   }
