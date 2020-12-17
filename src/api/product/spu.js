@@ -50,11 +50,26 @@ export default {
   },
   //更新更改的数据
   updateSaleList(spu) {
-    console.log(spu);
     return request({
       method: "POST",
       url: `${api_name}/updateSpuInfo`,
       data: spu
+    });
+  },
+  saveSaleList(spu) {
+    console.log(spu);
+    return request({
+      method: "POST",
+      url: `${api_name}/saveSpuInfo`,
+      data: spu
+    });
+  },
+  //保存到sku
+    saveSkuInfo(sku) {
+    return request({
+      url: `${api_name}/saveSkuInfo`,
+      method: "POST",
+      data: sku
     });
   }
 };

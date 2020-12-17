@@ -107,8 +107,6 @@ export default {
     },
     async handleChange3(category3Id) {
       // const result = await this.$API.attr.getAttrList(this.category);
-      console.log(category3Id);
-
       const category = {
         ...this.category,
         category3Id,

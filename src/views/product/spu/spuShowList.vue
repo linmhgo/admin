@@ -1,7 +1,14 @@
 <template>
   <div>
     <el-card class="box-card" style="margin-top: 20px">
-      <el-button type="primary" icon="el-icon-plus">添加SPU</el-button>
+      <!-- 因为发请求的时候缺个category3Id所有要把他传过去 -->
+      <el-button
+        type="primary"
+        :disabled="!category.category3Id"
+        icon="el-icon-plus"
+        @click="$bus.$emit('switchShow', { category3Id: category.category3Id })"
+        >添加SPU</el-button
+      >
       <el-table :data="pageList" border style="width: 100%; margin: 20px 0">
         <el-table-column type="index" label="序号" align="center" width="80">
         </el-table-column>
@@ -19,17 +26,18 @@
           </template> -->
         </el-table-column>
         <el-table-column label="操作">
-          <template slot-scope="socpe">
+          <template v-slot="{ row }">
             <el-button
               type="warning"
               icon="el-icon-plus"
               size="mini"
+              @click="$emit('switchSkuList', { ...category, ...row })"
             ></el-button>
             <el-button
               type="warning"
               icon="el-icon-edit"
               size="mini"
-              @click="update(socpe.row)"
+              @click="update(row)"
             ></el-button>
             <el-button
               type="warning"

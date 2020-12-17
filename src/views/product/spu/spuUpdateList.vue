@@ -185,14 +185,17 @@ export default {
     };
   },
   async mounted() {
-    //图片列表
-    this.getImageList();
     //品牌列表
     this.getTrademarkList();
     //销售列表
     this.getSaleList();
-    //部分销售列表
-    this.getSpusaleList();
+
+    if (this.pageList.id) {
+      //部分销售列表
+      //图片列表
+      this.getImageList();
+      this.getSpusaleList();
+    }
   },
   computed: {
     filterSale() {
@@ -252,7 +255,14 @@ export default {
             spuImageList: this.imageList,
             spuSaleAttrList: this.spusaleList,
           };
-          const result = await this.$API.spu.updateSaleList(spu);
+          let result;
+          if (this.pageList.id) {
+            result = await this.$API.spu.updateSaleList(spu);
+          } else {
+            console.log("save");
+            result = await this.$API.spu.saveSaleList(spu);
+          }
+
           if (result.code === 200) {
             this.$message.success("更新数据成功");
             // 数据更新成功跳转到show页面
