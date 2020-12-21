@@ -44,11 +44,17 @@
               icon="el-icon-warning"
               size="mini"
             ></el-button>
-            <el-button
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
-            ></el-button>
+            <el-popconfirm
+              title="这是一段内容确定删除吗？"
+              @onConfirm="delSpuSaleList(row.id)"
+            >
+              <el-button
+                slot="reference"
+                type="danger"
+                icon="el-icon-delete"
+                size="mini"
+              ></el-button>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -93,6 +99,11 @@ export default {
     }),
   },
   methods: {
+    async delSpuSaleList(id) {
+      console.log(id);
+      const result = await this.$API.spu.delSpuSaleList(id);
+      this.handleCategoryChange();
+    },
     handleCategoryChange() {
       // this.category = category;
       const { page, limit } = this;

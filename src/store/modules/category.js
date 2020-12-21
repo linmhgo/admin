@@ -50,6 +50,10 @@ export default {
   mutations: {
     GET_CATEGORY1_LIST(state, result) {
       state.category1List = result;
+      state.category.category2Id = "";
+      state.category.category3Id = "";
+      state.category2List = [];
+      state.category3List = [];
     },
     GET_CATEGORY2_LIST(state, { data, category1Id }) {
       state.category2List = data;

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <skuList v-if="showSkuList" :spuItme="skuItme" />
+    <skuList v-if="showSkuList" :spuItme="skuItme" @show="show" />
     <div v-else>
       <Category />
       <spuShowList v-if="isShow" @switchSkuList="switchSkuList" />
@@ -36,6 +36,10 @@ export default {
     this.$bus.$on("shiftShowList", this.shiftShowList);
   },
   methods: {
+    show() {
+      this.showSkuList = false;
+      this.isShow = true;
+    },
     switchSkuList(sku) {
       this.showSkuList = true;
       this.skuItme = { ...sku };
@@ -57,6 +61,7 @@ export default {
   },
   beforeDestroy() {
     this.$bus.$off("switchShow", this.getPageList);
+    this.$bus.$on("shiftShowList", this.shiftShowList);
   },
 };
 </script>

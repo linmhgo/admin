@@ -65,7 +65,8 @@ export default {
     });
   },
   //保存到sku
-    saveSkuInfo(sku) {
+  saveSkuInfo(sku) {
+    console.log(sku);
     return request({
       url: `${api_name}/saveSkuInfo`,
       method: "POST",
